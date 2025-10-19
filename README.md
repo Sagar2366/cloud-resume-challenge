@@ -1,12 +1,12 @@
 # AWS Cloud Resume Challenge
-![Website](../generated-diagrams/website.png)
+![Website](generated-diagrams/website.png)
 
 This is Sagar Utekar's implementation of the AWS Cloud Resume Challenge.
 What is Cloud Resume Challenge? - [The Cloud Resume Challenge](https://cloudresumechallenge.dev/) is a multiple-step resume project which helps build and demonstrate skills fundamental to pursuing a career in Cloud. The project was published by Forrest Brazeal.
 
 ## Architecture
 
-![Architecture Diagram](../generated-diagrams/aws_resume_architecture.png)
+![Architecture Diagram](generated-diagrams/aws_resume_architecture.png)
 
 The architecture follows a serverless approach using AWS services:
 
