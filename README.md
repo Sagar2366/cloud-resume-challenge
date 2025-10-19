@@ -193,24 +193,25 @@ If not using Terraform, create resources manually:
 
 1. **Create DynamoDB Table**:
    - Go to DynamoDB Console
-   - Create table named `resume-challenge`
+   - Create table named `cloud-resume-table`
    - Partition key: `id` (String)
    - Use on-demand billing
-   - Add item: `id: "0"`, `views: 0`
+   - Add initial item: `id: "0"`, `views: 0`
 
 2. **Create Lambda Function**:
    - Go to Lambda Console
-   - Create function: `myfunc`
-   - Runtime: Python 3.8
+   - Create function: `cloud-resume-lambda`
+   - Runtime: Python 3.12
    - Upload `infra/lambda/func.py` code
-   - Create function URL with CORS enabled
-   - Set environment variables if needed
+   - Handler: `func.lambda_handler`
+   - Timeout: 30 seconds
 
-3. **Configure IAM Role**:
-   - Create role for Lambda
+3. **Configure IAM Role for Lambda**:
+   - Create role: `cloud-resume-lambda-role`
+   - Trust policy: Allow Lambda service to assume role
    - Attach policies:
      - `AWSLambdaBasicExecutionRole`
-     - Custom policy for DynamoDB access:
+     - Custom DynamoDB policy:
        ```json
        {
          "Version": "2012-10-17",
@@ -221,33 +222,54 @@ If not using Terraform, create resources manually:
                "dynamodb:GetItem",
                "dynamodb:UpdateItem"
              ],
-             "Resource": "arn:aws:dynamodb:*:*:table/resume-challenge"
+             "Resource": "arn:aws:dynamodb:*:*:table/cloud-resume-table"
            }
          ]
        }
        ```
 
-4. **Create S3 Bucket** (for website hosting):
+4. **Create API Gateway (HTTP API)**:
+   - Go to API Gateway Console
+   - Create HTTP API
+   - Name: `cloud-resume-challenge`
+   - Create route: `GET /visitor`
+   - Integration type: Lambda function
+   - Lambda function: `cloud-resume-lambda`
+   - Deploy to `$default` stage
+   - Note the API endpoint URL
+
+5. **Configure Lambda Permissions for API Gateway**:
+   ```bash
+   aws lambda add-permission \
+     --function-name cloud-resume-lambda \
+     --statement-id apigateway-invoke \
+     --action lambda:InvokeFunction \
+     --principal apigateway.amazonaws.com \
+     --source-arn "arn:aws:execute-api:REGION:ACCOUNT:API-ID/*/*/visitor"
+   ```
+
+6. **Create S3 Bucket** (for website hosting):
    - Go to S3 Console
    - Create bucket with unique name
    - Enable static website hosting
    - Set index document: `index.html`
    - Configure bucket policy for public read access
 
-5. **Setup CloudFront** (optional):
+7. **Setup CloudFront** (optional):
    - Create CloudFront distribution
    - Origin: S3 bucket
    - Configure caching and SSL
 
-### 4. Note Lambda Function URL
-After deployment, copy the Lambda function URL from:
+### 4. Note API Gateway URL
+After deployment, copy the API Gateway URL from:
 - Terraform output, OR
-- Lambda Console → Function → Configuration → Function URL
+- API Gateway Console → Your API → Stages → $default
 
 ### 5. Update Website JavaScript
-Update `website/index.js` with your Lambda function URL:
+Update `website/index.js` with your API Gateway URL:
 ```javascript
-const API_URL = 'your-lambda-function-url-here';
+// Replace with your API Gateway URL
+fetch("https://your-api-id.execute-api.region.amazonaws.com/visitor")
 ```
 
 ### 6. Deploy Website
@@ -311,6 +333,83 @@ Run with:
 ```bash
 docker-compose up -d
 docker-compose down
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Visitor Counter Shows Zero
+**Symptoms**: Counter always displays "Views: 0"
+
+**Possible Causes & Solutions**:
+- **DynamoDB Reserved Keyword**: The word "views" is reserved in DynamoDB
+  - **Fix**: Use `ExpressionAttributeNames` in Lambda code:
+    ```python
+    UpdateExpression='SET #v = if_not_exists(#v, :start) + :incr',
+    ExpressionAttributeNames={'#v': 'views'}
+    ```
+
+- **Wrong Table Name**: Lambda function looking for wrong table
+  - **Fix**: Ensure Lambda uses correct table name (`cloud-resume-table`)
+
+- **JSON Serialization Error**: DynamoDB returns Decimal type
+  - **Fix**: Convert to int in Lambda: `views = int(response['Attributes']['views'])`
+
+- **API Gateway Permissions**: Lambda lacks invoke permissions
+  - **Fix**: Add Lambda permission for API Gateway:
+    ```bash
+    aws lambda add-permission --function-name cloud-resume-lambda \
+      --statement-id apigateway-invoke --action lambda:InvokeFunction \
+      --principal apigateway.amazonaws.com \
+      --source-arn "arn:aws:execute-api:REGION:ACCOUNT:API-ID/*/*/visitor"
+    ```
+
+#### 2. API Gateway Returns "Not Found"
+**Symptoms**: API returns `{"message":"Not Found"}`
+
+**Solutions**:
+- Check if using correct stage URL (use `$default` stage, not `prod`)
+- Verify route is configured: `GET /visitor`
+- Ensure integration points to correct Lambda function
+- Redeploy API Gateway stage
+
+#### 3. CORS Errors in Browser
+**Symptoms**: Browser console shows CORS policy errors
+
+**Solutions**:
+- Enable CORS in API Gateway with `*` origins
+- Add CORS headers in Lambda response:
+  ```python
+  'headers': {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+  }
+  ```
+
+#### 4. Lambda Function Timeout
+**Symptoms**: Function times out after 3 seconds
+
+**Solutions**:
+- Increase timeout in Lambda configuration (30 seconds recommended)
+- Check DynamoDB table exists and is accessible
+- Verify IAM permissions for DynamoDB access
+
+### Debug Commands
+```bash
+# Test Lambda function directly
+aws lambda invoke --function-name cloud-resume-lambda --payload '{}' response.json
+cat response.json
+
+# Check CloudWatch logs
+aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/cloud-resume-lambda"
+
+# Test API Gateway endpoint
+curl -X GET "https://your-api-id.execute-api.region.amazonaws.com/visitor"
+
+# Check DynamoDB table
+aws dynamodb scan --table-name cloud-resume-table
 ```
 
 ## Cleanup

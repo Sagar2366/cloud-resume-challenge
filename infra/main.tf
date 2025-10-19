@@ -3,10 +3,11 @@
 resource "aws_lambda_function" "myfunc" {
   filename         = data.archive_file.zip_the_python_code.output_path
   source_code_hash = data.archive_file.zip_the_python_code.output_base64sha256
-  function_name    = "myfunc"
+  function_name    = "cloud-resume-lambda"
   role             = aws_iam_role.iam_for_lambda.arn
   handler          = "func.lambda_handler"
-  runtime          = "python3.8"
+  runtime          = "python3.12"
+  timeout          = 30
 
   tags = {
     Name = "ResumeVisitorCounter"
@@ -62,7 +63,7 @@ resource "aws_iam_policy" "iam_policy_for_resume_project" {
           "dynamodb:UpdateItem",
           "dynamodb:GetItem"
         ],
-        "Resource" : "arn:aws:dynamodb:*:*:table/resume-challenge"
+        "Resource" : "arn:aws:dynamodb:*:*:table/cloud-resume-table"
       },
     ]
   })
@@ -82,27 +83,63 @@ data "archive_file" "zip_the_python_code" {
   output_path = "${path.module}/lambda/func.zip"
 }
 
-# Lambda Function URL
-# Creates a public HTTPS endpoint for the Lambda function
-resource "aws_lambda_function_url" "url1" {
-  function_name      = aws_lambda_function.myfunc.function_name
-  authorization_type = "NONE"
+# API Gateway HTTP API
+# Creates a managed API endpoint for the Lambda function
+resource "aws_apigatewayv2_api" "lambda_api" {
+  name          = "cloud-resume-challenge"
+  protocol_type = "HTTP"
+  description   = "HTTP API for cloud resume challenge visitor counter"
 
-  # CORS configuration for web browser access
-  cors {
-    allow_credentials = true
-    allow_origins     = ["*"]
+  cors_configuration {
+    allow_credentials = false
+    allow_headers     = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token", "x-amz-user-agent"]
     allow_methods     = ["*"]
-    allow_headers     = ["date", "keep-alive"]
-    expose_headers    = ["keep-alive", "date"]
+    allow_origins     = ["*"]
+    expose_headers    = ["date", "keep-alive"]
     max_age           = 86400
   }
+}
+
+# API Gateway Integration
+# Connects the API Gateway to the Lambda function
+resource "aws_apigatewayv2_integration" "lambda_integration" {
+  api_id             = aws_apigatewayv2_api.lambda_api.id
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+  integration_uri    = aws_lambda_function.myfunc.invoke_arn
+  payload_format_version = "2.0"
+}
+
+# API Gateway Route
+# Defines the /visitor endpoint
+resource "aws_apigatewayv2_route" "visitor_route" {
+  api_id    = aws_apigatewayv2_api.lambda_api.id
+  route_key = "GET /visitor"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+# API Gateway Stage
+# Deploys the API to the $default stage
+resource "aws_apigatewayv2_stage" "default_stage" {
+  api_id      = aws_apigatewayv2_api.lambda_api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+# Lambda Permission for API Gateway
+# Allows API Gateway to invoke the Lambda function
+resource "aws_lambda_permission" "api_gateway_invoke" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.myfunc.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.lambda_api.execution_arn}/*/*/visitor"
 }
 
 # DynamoDB Table for Visitor Counter
 # Stores the visitor count data with pay-per-request billing
 resource "aws_dynamodb_table" "resume_challenge" {
-  name         = "resume-challenge"
+  name         = "cloud-resume-table"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 
@@ -114,4 +151,15 @@ resource "aws_dynamodb_table" "resume_challenge" {
   tags = {
     Name = "ResumeChallenge"
   }
+}
+
+# Output the API Gateway URL
+output "api_gateway_url" {
+  description = "API Gateway endpoint URL for visitor counter"
+  value       = aws_apigatewayv2_api.lambda_api.api_endpoint
+}
+
+output "visitor_api_url" {
+  description = "Complete URL for visitor counter API"
+  value       = "${aws_apigatewayv2_api.lambda_api.api_endpoint}/visitor"
 }

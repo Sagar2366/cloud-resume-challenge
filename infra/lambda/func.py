@@ -7,9 +7,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Initialize DynamoDB resource and reference the table
-# Ensure the table 'resume-challenge' exists with partition key 'id' (String)
+# Ensure the table 'cloud-resume-table' exists with partition key 'id' (String)
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('resume-challenge')
+table = dynamodb.Table('cloud-resume-table')
 
 def lambda_handler(event, context):
     """
@@ -27,7 +27,10 @@ def lambda_handler(event, context):
         # This avoids race conditions in concurrent requests (no separate GET + PUT needed)
         response = table.update_item(
             Key={'id': '0'},  # Fixed key for the single counter item
-            UpdateExpression='SET views = if_not_exists(views, :start) + :incr',
+            UpdateExpression='SET #v = if_not_exists(#v, :start) + :incr',
+            ExpressionAttributeNames={
+                '#v': 'views'  # 'views' is a reserved keyword, so we use an alias
+            },
             ExpressionAttributeValues={
                 ':start': 0,  # Default starting value if 'views' doesn't exist
                 ':incr': 1   # Increment amount
@@ -36,7 +39,7 @@ def lambda_handler(event, context):
         )
         
         # Extract the updated view count from the response
-        views = response['Attributes']['views']
+        views = int(response['Attributes']['views'])  # Convert Decimal to int for JSON serialization
         logger.info(f"Views updated to: {views}")  # Log success for monitoring
         
         # Return 200 OK with CORS headers for client-side fetch

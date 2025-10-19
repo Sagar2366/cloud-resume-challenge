@@ -254,14 +254,16 @@ function updateCounter() {
     const counters = document.querySelectorAll(".counter-number");
     if (counters.length === 0) return;
 
-    fetch("https://wwjcx7tyxrbjmbkf3vc3teo3mu0qrvhq.lambda-url.ca-central-1.on.aws/")
+    fetch("https://2iu11sn6oh.execute-api.us-east-1.amazonaws.com/visitor")
         .then(response => {
             if (!response.ok) throw new Error('Fetch failed');
             return response.json();
         })
         .then(data => {
+            console.log('API Response:', data); // Debug log
+            const viewCount = data.views || data || 0;
             counters.forEach(counter => {
-                counter.innerHTML = `Views: ${data}`;
+                counter.innerHTML = `Views: ${viewCount}`;
             });
         })
         .catch(error => {
