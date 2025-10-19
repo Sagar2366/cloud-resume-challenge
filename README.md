@@ -520,6 +520,8 @@ aws cloudfront list-distributions --query 'DistributionList.Items[?contains(Alia
 
 ## Part 2: Automated Setup (Production Approach)
 
+![Part 2 CI/CD Pipeline](generated-diagrams/part2_cicd_pipeline.png)
+
 This section shows how to automate everything using Terraform and GitHub Actions for a production-ready setup.
 
 ### Prerequisites for Automation
