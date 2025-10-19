@@ -63,9 +63,8 @@ The architecture follows a serverless approach using AWS services:
   ```
 - **Configure**: `aws configure` (enter Access Key, Secret Key, Region)
 
-### Optional Development Tools
 
-#### 7. Amazon Q Developer
+#### 3. Amazon Q Developer
 - **What is it**: AI-powered coding assistant built by AWS for developers
 - **Purpose**: Provides intelligent code suggestions, AWS best practices, and debugging help
 - **Features**:
@@ -79,20 +78,20 @@ The architecture follows a serverless approach using AWS services:
   3. Enable in VS Code settings
 - **Usage**: Type code and get AI suggestions, ask questions in chat panel
 
-#### 8. uvx (Universal eXecutable)
+#### 4. uvx (Universal eXecutable)
 - **What is it**: Tool to run Python applications in isolated environments
 - **Purpose**: Execute Python packages without installing them globally
 - **Install**: `pip install uvx`
 - **Usage**: `uvx package-name` runs packages in temporary environments
 - **Benefits**: No dependency conflicts, clean system
 
-#### 9. MCP (Model Context Protocol)
+#### 5. MCP (Model Context Protocol)
 - **What is it**: Open protocol for connecting AI assistants to external tools and data
 - **Purpose**: Enables AI models to interact with various services and APIs
 - **How it works**: AI assistants use MCP servers to access external functionality
 - **Benefits**: Extends AI capabilities beyond text generation
 
-#### 10. Diagram MCP Server
+#### 6. Diagram MCP Server
 - **What is it**: MCP server that generates AWS architecture diagrams
 - **Purpose**: Create visual diagrams programmatically using AI
 - **Setup**:
