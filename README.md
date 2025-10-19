@@ -41,16 +41,6 @@ The architecture follows a serverless approach using AWS services:
 └── generated-diagrams/ # Architecture diagrams
 ```
 
-## AWS Services Overview
-
-- **S3**: Static website hosting for HTML/CSS/JS files
-- **CloudFront**: Global CDN for fast content delivery and caching
-- **Route 53**: DNS service for domain name resolution
-- **Certificate Manager**: SSL/TLS certificates for HTTPS encryption
-- **Lambda**: Serverless function to handle visitor counter API
-- **DynamoDB**: NoSQL database to store visitor count data
-- **IAM**: Identity and access management for secure permissions
-
 ## Prerequisites
 
 ### Required Tools & Accounts
