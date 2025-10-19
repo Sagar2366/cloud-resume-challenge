@@ -1,0 +1,9 @@
+infra/
+.git/
+.github/
+README.md
+*.md
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
