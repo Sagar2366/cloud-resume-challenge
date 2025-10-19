@@ -1,0 +1,110 @@
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 500
+>>
+stream
+BT
+/F1 18 Tf
+50 750 Td
+(SAGAR UTEKAR) Tj
+0 -30 Td
+/F1 12 Tf
+(DevOps Engineer & Site Reliability Engineer) Tj
+0 -40 Td
+(Email: contact@sagarutekar.com) Tj
+0 -20 Td
+(LinkedIn: linkedin.com/in/sagar-utekar) Tj
+0 -20 Td
+(GitHub: github.com/sagar2366) Tj
+0 -40 Td
+/F1 14 Tf
+(EXPERIENCE) Tj
+0 -25 Td
+/F1 12 Tf
+(Site Reliability Engineer - CrowdStrike) Tj
+0 -15 Td
+(• Managing cloud infrastructure and monitoring systems) Tj
+0 -15 Td
+(• Implementing DevOps best practices and CI/CD pipelines) Tj
+0 -15 Td
+(• Working with Kubernetes, Docker, and AWS services) Tj
+0 -30 Td
+/F1 14 Tf
+(CERTIFICATIONS) Tj
+0 -25 Td
+/F1 12 Tf
+(• Certified Kubernetes Administrator (CKA)) Tj
+0 -15 Td
+(• Certified Kubernetes Security Specialist (CKS)) Tj
+0 -15 Td
+(• Docker Captain) Tj
+0 -15 Td
+(• CNCF Ambassador) Tj
+0 -30 Td
+/F1 14 Tf
+(SKILLS) Tj
+0 -25 Td
+/F1 12 Tf
+(• Cloud Platforms: AWS, Kubernetes) Tj
+0 -15 Td
+(• Programming: Python, Go, JavaScript) Tj
+0 -15 Td
+(• DevOps Tools: Docker, Terraform, Jenkins) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000274 00000 n 
+0000000826 00000 n 
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+895
+%%EOF
