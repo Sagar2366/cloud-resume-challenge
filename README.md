@@ -86,6 +86,9 @@ The architecture follows a serverless approach using AWS services:
 - **Benefits**: No dependency conflicts, clean system
 
 #### 5. MCP (Model Context Protocol)
+
+![MCP Architecture](generated-diagrams/mcp-architecture.avif)
+
 - **What is it**: Open protocol for connecting AI assistants to external tools and data
 - **Purpose**: Enables AI models to interact with various services and APIs
 - **How it works**: AI assistants use MCP servers to access external functionality
